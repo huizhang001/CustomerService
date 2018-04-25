@@ -1,0 +1,15 @@
+{
+    "name": "guoyuzhao/customer-service",
+    "authors": [
+        {
+            "name": "郭玉朝",
+            "email": "2788828128@qq.com"
+        }
+    ],
+    "require": {
+        "topthink/think-orm": "^1.2",
+        "noahbuscher/macaw": "dev-master",
+        "workerman/gateway-worker": "^3.0",
+        "filp/whoops": "*"
+    }
+}
