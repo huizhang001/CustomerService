@@ -11,5 +11,13 @@
         "noahbuscher/macaw": "dev-master",
         "workerman/gateway-worker": "^3.0",
         "filp/whoops": "*"
+    },
+    "autoload":{
+        "psr-4":{
+            "App\\": "application/",
+            "Tool\\": "extends/tool"
+        },
+        "classmap": [
+        ]
     }
 }
