@@ -5,9 +5,11 @@
  * Description:
  */
 use NoahBuscher\Macaw\Macaw;
+use App\Server\Customer\Test;
 
 Macaw::get('fuck', function() {
-    echo "成功！";
+    $test = new test();
+    $test->test();
 });
 
 Macaw::get('(:all)', function($fu) {
