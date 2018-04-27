@@ -5,11 +5,21 @@
  * Description:
  */
 use NoahBuscher\Macaw\Macaw;
-use App\Server\Customer\Test;
-
-Macaw::get('fuck', function() {
-    $test = new test();
-    $test->test();
+use App\Api\CustomerServiceApi\CustomerServiceApi;
+use Tool\Encrypt\Encrypt;
+use Tool\Request\Request;
+/**
+ * 添加客服
+ */
+Macaw::get('CustomerService/public/index.php/add_customer_service', function() {
+    $test = new CustomerServiceApi();
+    $str = json_encode([
+        'data'      => [
+            'customer_service_name' => "客服1"
+        ]
+    ]);
+    $res = Encrypt::authcodeEncrypt($str,Encrypt::ENCRYPT);
+    $test->addCustomerService(Request::instance($res));
 });
 
 Macaw::get('(:all)', function($fu) {

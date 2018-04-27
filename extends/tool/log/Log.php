@@ -61,7 +61,7 @@ class Log {
      * CreateTime: 2018/4/25 下午10:44
      */
     function isExistencePath() {
-        if (!is_dir($this->path)) mkdir($this->path); // 如果不存在则创建
+        if (!is_dir($this->path)) mkdir($this->path, 0777,true); // 如果不存在则创建
     }
 
     function logging( $string ) {

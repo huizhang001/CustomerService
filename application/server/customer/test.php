@@ -10,6 +10,6 @@ class test
 {
     public function test()
     {
-        Log::instance(["33"])->trace("哈哈测试成功");
+        Log::instance(["hahahahah"])->trace("哈哈测试成功");
     }
 }
