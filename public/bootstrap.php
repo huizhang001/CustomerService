@@ -6,8 +6,11 @@
  */
 // Autoload 自动载入
 
-require PUBLIC_PATH.'/../vendor/autoload.php';
+use think\Db;
 
+require PUBLIC_PATH.'/../vendor/autoload.php';
+require '../config/database.php';
+Db::setConfig(require '../config/database.php');
 // whoops 错误提示
 
 $whoops = new \Whoops\Run;
