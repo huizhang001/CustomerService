@@ -11,9 +11,9 @@ interface ModelBaseInter
 
     public function addInfo(array $data):bool;
 
-    public function editInfo();
+    public function editInfo(array $condition, array $data);
 
-    public function delInfo();
+    public function delInfo(array $condition);
 
     public function selectInfo();
 
