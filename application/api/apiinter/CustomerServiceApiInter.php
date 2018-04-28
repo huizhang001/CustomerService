@@ -10,6 +10,12 @@ use Tool\Request\Request;
 interface CustomerServiceApiInter
 {
 
-    public function addCustomerService(Request $request);
+    public function addCustomerService();
+
+    public function editCustomerService();
+
+    public function delCustomerService();
+
+    public function findCustomerService();
 
 }

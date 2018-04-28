@@ -16,7 +16,7 @@ use Tool\Log\Log;
 class CustomerServiceModel extends Model implements ModelBaseInter
 {
     protected $table = "customer_service";
-    protected $pk = 'id';
+    protected $pk = 'customer_service_id';
     protected static $myself = null;
 
     /**
@@ -43,20 +43,23 @@ class CustomerServiceModel extends Model implements ModelBaseInter
     public function addInfo(array $data):bool
     {
         // TODO: Implement addInfo() method.
-        if ($this->save($data)) {
+        if ($this->allowField(true)->save($data)) {
             return true;
         }
         return false;
     }
 
-    public function editInfo()
+    public function editInfo(array $condition, array $data)
     {
         // TODO: Implement editInfo() method.
+        return $this->save($data, $condition);
     }
 
-    public function delInfo()
+
+    public function delInfo(array $delCondition)
     {
         // TODO: Implement delInfo() method.
+        return $this->where($delCondition)->delete();
     }
 
     public function selectInfo()
@@ -70,7 +73,7 @@ class CustomerServiceModel extends Model implements ModelBaseInter
         try {
             return $this->where($condition)->find();
         } catch (\Exception $e) {
-            Log::instance(['customer_service_api'])->error('添加客服异常');
+            Log::instance(['customer_service_api'])->error('查找客服数据库异常');
             return false;
         }
     }

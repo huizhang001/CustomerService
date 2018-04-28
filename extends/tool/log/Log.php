@@ -14,6 +14,7 @@ class Log {
     protected static $myself = null;
     protected $modular = '';
     protected static $params = [''];
+    protected $logData;
 
     /**
      * Log constructor.
@@ -53,6 +54,10 @@ class Log {
             $this->path = $this->path . "/".Log::$params[0];
             $this->isExistencePath();
         }
+        if (isset(Log::$params[1])) {
+            $this->try_covert_to_string(Log::$params[1]);
+            $this->logData = Log::$params[1];
+        }
     }
 
     /**
@@ -70,7 +75,8 @@ class Log {
             "IP地址: ". $_SERVER['REMOTE_ADDR'] . "\r\n".
             "请求地址:". $_SERVER['REQUEST_URI']. "\r\n".
             "日志类型:". $this->logType . "\r\n".
-            "日志数据:[\r\n     ". $string . "\r\n]";
+            "日志提示:". $string . "\r\n".
+            "日志数据:". $this->logData . "\r\n";
         @error_log($msg, 3, $file);
     }
 
