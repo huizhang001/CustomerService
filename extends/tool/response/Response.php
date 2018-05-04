@@ -28,18 +28,25 @@ class Response
     /**
      * Description: 返回数据结果
      * User: 郭玉朝
-     * CreateTime: 2018/4/13 下午2:08
+     * CreateTime: 2018/4/30 下午11:23
      * @param int $code
-     * @param $msg
+     * @param string $msg
      * @param array $data
+     * @param $msg_type
+     * @param string $dataType
      * @param string $returnType
      * @return string
      */
     public static function returnResult(
-        int $code, string $msg, $data = [],
+        int $code, string $msg, $data = [], $msg_type,
         string $dataType = Response::DATA_TYPE_JSON, string $returnType = Response::RETURN_TYPE_DIE
     ) {
-        $data = ['return_code'  => $code, 'return_msg'   => $msg, 'data'  => $data];
+        $data = [
+            'return_code'  => $code,
+            'msg_type'  => $msg_type,
+            'return_msg'   => $msg,
+            'data'  => $data
+        ];
         if ($dataType == Response::DATA_TYPE_JSON) {
             $returnData = DataConversion::arrayToJson($data);
         } elseif ($dataType == Response::DATA_TYPE_XML) {

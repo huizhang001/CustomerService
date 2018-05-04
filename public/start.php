@@ -6,6 +6,8 @@
  */
 ini_set('display_errors', 'on');
 use Workerman\Worker;
+define('PUBLIC_PATH', __DIR__);
+require PUBLIC_PATH.'/bootstrap.php';
 
 if(strpos(strtolower(PHP_OS), 'win') === 0)
 {

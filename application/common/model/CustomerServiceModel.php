@@ -62,9 +62,10 @@ class CustomerServiceModel extends Model implements ModelBaseInter
         return $this->where($delCondition)->delete();
     }
 
-    public function selectInfo()
+    public function selectInfo($condition)
     {
         // TODO: Implement selectInfo() method.
+        return $this->where($condition)->select();
     }
 
     public function findInfo(array $condition)
@@ -78,5 +79,44 @@ class CustomerServiceModel extends Model implements ModelBaseInter
         }
     }
 
+    /**
+     * Description: 初始化客服连接
+     * User: 郭玉朝
+     * CreateTime: 2018/5/4 下午3:14
+     * @return $this
+     */
+    public function setAllClientIdNull()
+    {
+        return $this->where("1=1")->update(['client_id' => null, 'connect_num' => 0]);
+    }
+
+    /**
+     * Description: 获取所有在线客服
+     * User: 郭玉朝
+     * CreateTime: 2018/5/4 下午5:15
+     */
+    public function getAllOnline() {
+        try {
+            return $this->where('client_id', '<>', null)->select();
+        } catch (\Exception $e) {
+            Log::instance(['customer_service_api'])->error('获取所有在线客服抛异常');
+            return false;
+        }
+    }
+
+    /**
+     * Description: 更改客服服务人数
+     * User: 郭玉朝
+     * CreateTime: 2018/5/4 下午5:53
+     * @param string $id
+     * @param string $changeType
+     * @return CustomerServiceModel
+     * @throws \think\exception\DbException
+     */
+    public function changeConnectNum(string $id, string $changeType)
+    {
+        return $this->where('customer_service_id', $id)->
+        update(['connect_num'=>[$changeType,1]]);
+    }
 
 }
