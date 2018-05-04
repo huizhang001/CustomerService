@@ -15,7 +15,7 @@ interface ModelBaseInter
 
     public function delInfo(array $condition);
 
-    public function selectInfo();
+    public function selectInfo(array $condition);
 
     public function findInfo(array $condition);
 }

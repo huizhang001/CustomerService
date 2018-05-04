@@ -70,14 +70,53 @@ class Log {
     }
 
     function logging( $string ) {
+        $ip = '127.0.0.1';
         $file = $this->path . '/' . date("Ymd") . '.log';
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
         $msg = "\r\n==================================请求时间:".date("Y-m-d H:i:s")."=======================================================\r\n".
-            "IP地址: ". $_SERVER['REMOTE_ADDR'] . "\r\n".
-            "请求地址:". $_SERVER['REQUEST_URI']. "\r\n".
+            "IP地址: ". $ip . "\r\n".
             "日志类型:". $this->logType . "\r\n".
             "日志提示:". $string . "\r\n".
-            "日志数据:". $this->logData . "\r\n";
+            "日志数据:". $this->logData . "\r\n".
+            "请求过程:". $this->getCallFunctions() . "\r\n";
         @error_log($msg, 3, $file);
+    }
+
+    /**
+     * Description: 获取调用函数的过程
+     * User: 郭玉朝
+     * CreateTime: 2018/4/30 下午1:35
+     * @param int $function_num
+     * @return string
+     */
+    private function getCallFunctions($function_num = 3)
+    {
+        $debugInfo = debug_backtrace();
+        $functionNums = [0, 3];
+        if (is_int($function_num)) {
+            $functionNums[1] = $function_num;
+        } elseif (is_array($function_num) && count($function_num) > 1) {
+            $functionNums[0] += $function_num[0];
+            $functionNums[1] = $function_num[1];
+        }
+        if (count($debugInfo) < $functionNums[0]) {
+            return '';
+        }
+        $stack = "[\r\n";
+        $k = 1;
+        for ($i = $functionNums[0]; $i < count($debugInfo); $i++) {
+            if ($functionNums[1] <= 0) {
+                break;
+            }
+            $stack .= "   (" . ($k++) . ") { file:" . (isset($debugInfo[$i]["file"]) ? $debugInfo[$i]["file"] : 'null');
+            $stack .= ",line:" . (isset($debugInfo[$i]["line"]) ? $debugInfo[$i]["line"] : 'null');
+            $stack .= ",function:" . (isset($debugInfo[$i]["function"]) ? $debugInfo[$i]["function"] : 'null') . " }\r\n";
+            $functionNums[1]--;
+        }
+        $stack .= "]";
+        return $stack;
     }
 
     /**
