@@ -14,4 +14,6 @@ class Consts
 
     const CUSTOMER_CONNECT = "CUSTOMER_CONNECT"; // 用户连接
 
+    const CUSTOMER_NEWS = "CUSTOMER_NEWS"; // 用户发送数据
+
 }

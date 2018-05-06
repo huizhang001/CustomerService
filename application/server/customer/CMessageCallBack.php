@@ -64,10 +64,27 @@ class CMessageCallBack
      */
     public function main()
     {
-        // 顾客连接
-        if ($this->request->msgType == Consts::MSG_TYPE_CONNECT) {
-            $this->connection();
+        switch ($this->request->msgType) {
+            case Consts::CUSTOMER_CONNECT:
+                $this->connection();
+                break;
+            case Consts::CUSTOMER_NEWS:
+                $this->sendNews();
+                break;
         }
+    }
+
+    /**
+     * Description: 转发消息给客服
+     * User: 郭玉朝
+     * CreateTime: 2018/5/6 下午5:26
+     */
+    protected function sendNews() {
+        // 数据转发给客服
+        $customerServiceUid = Gateway::getSession($this->request->clientId)['customer_service_uid'];
+        Gateway::sendToUid($customerServiceUid,
+            Response::returnResult(Response::CODE_SUCCESS, "新消息",  $this->data
+                , Consts::CUSTOMER_NEWS, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN) );
     }
 
     /**
@@ -83,6 +100,9 @@ class CMessageCallBack
         // 更改客服的服务人数数量
         CustomerService::changeConnectNum($optimumCusomerService['customer_service_id'],
             CustomerService::CONNECT_NUM_ADD);
+        // 设置session
+        Gateway::setSession($this->request->clientId,
+            ['customer_service_uid' => $optimumCusomerService['customer_service_id']]);
         // 返回客服信息
         $this->customer->sendSuccess("返回客服信息成功", $optimumCusomerService);
         // 告诉客服有人已经连接
