@@ -282,7 +282,7 @@
     //      发送信息
     $("#chat-fasong").click(function () {
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
-        var sendData = JSON.stringify({'msg_type':'CUSTOMER_NEWS', 'data': textContent});
+        var sendData = JSON.stringify({'msg_type':'CUSTOMER_NEWS', 'data': {'news':textContent}});
         ws.send(sendData);
         if (textContent != "") {
             $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +

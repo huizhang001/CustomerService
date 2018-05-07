@@ -81,9 +81,11 @@ class CMessageCallBack
      */
     protected function sendNews() {
         // 数据转发给客服
+        $sendNews = $this->data['data'];
+        $sendNews['client_id'] = $this->request->clientId;
         $customerServiceUid = Gateway::getSession($this->request->clientId)['customer_service_uid'];
         Gateway::sendToUid($customerServiceUid,
-            Response::returnResult(Response::CODE_SUCCESS, "新消息",  $this->data
+            Response::returnResult(Response::CODE_SUCCESS, "新消息",  $sendNews
                 , Consts::CUSTOMER_NEWS, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN) );
     }
 
