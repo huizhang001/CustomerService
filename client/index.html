@@ -39,38 +39,38 @@
             <div class="chatBox-kuang" ref="chatBoxkuang">
                 <div class="chatBox-content">
                     <div class="chatBox-content-demo" id="chatBox-content-demo">
-                        <div class="clearfloat">
-                            <div class="author-name">
-                                <small class="chat-date">2017-12-02 14:26:58</small>
-                            </div>
-                            <div class="left">
-                                <div class="chat-avatars"><img src="img/icon01.png" alt="头像"></div>
-                                <div class="chat-message">
-                                    给你看张图
-                                </div>
-                            </div>
-                        </div>
-                        <div class="clearfloat">
-                            <div class="author-name">
-                                <small class="chat-date">2017-12-02 14:26:58</small>
-                            </div>
-                            <div class="left">
-                                <div class="chat-avatars"><img src="img/icon01.png" alt="头像"></div>
-                                <div class="chat-message">
-                                    <img src="img/1.png" alt="">
-                                </div>
-                            </div>
-                        </div>
+                        <!--<div class="clearfloat">-->
+                            <!--<div class="author-name">-->
+                                <!--<small class="chat-date">2017-12-02 14:26:58</small>-->
+                            <!--</div>-->
+                            <!--<div class="left">-->
+                                <!--<div class="chat-avatars"><img src="img/icon01.png" alt="头像"></div>-->
+                                <!--<div class="chat-message">-->
+                                    <!--给你看张图-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class="clearfloat">-->
+                            <!--<div class="author-name">-->
+                                <!--<small class="chat-date">2017-12-02 14:26:58</small>-->
+                            <!--</div>-->
+                            <!--<div class="left">-->
+                                <!--<div class="chat-avatars"><img src="img/icon01.png" alt="头像"></div>-->
+                                <!--<div class="chat-message">-->
+                                    <!--<img src="img/1.png" alt="">-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
 
-                        <div class="clearfloat">
-                            <div class="author-name">
-                                <small class="chat-date">2017-12-02 14:26:58</small>
-                            </div>
-                            <div class="right">
-                                <div class="chat-message">嗯，适合做壁纸</div>
-                                <div class="chat-avatars"><img src="img/icon02.png" alt="头像"></div>
-                            </div>
-                        </div>
+                        <!--<div class="clearfloat">-->
+                            <!--<div class="author-name">-->
+                                <!--<small class="chat-date">2017-12-02 14:26:58</small>-->
+                            <!--</div>-->
+                            <!--<div class="right">-->
+                                <!--<div class="chat-message">嗯，适合做壁纸</div>-->
+                                <!--<div class="chat-avatars"><img src="img/icon02.png" alt="头像"></div>-->
+                            <!--</div>-->
+                        <!--</div>-->
 
                     </div>
                 </div>
@@ -136,6 +136,10 @@
 
 
 <script src="js/jquery.min.js"></script>
+<script src="js/cookie.js"></script>
+<script src="js/time.js"></script>
+
+
 <script>
     var ws;
     $(function(){
@@ -169,6 +173,7 @@
             case "CUSTOMER_CONNECT":
                 msgType.CUSTOMER_CONNECT(data);
                 break;
+            // 接收用户消息
             case "CUSTOMER_NEWS":
                 msgType.CUSTOMER_NEWS(data);
         }
@@ -186,17 +191,28 @@
                 addCustomerlement(data);
             },
             CUSTOMER_NEWS: function (data) {
-                console.log(data.data);
+                getNews(data);
             }
         };
         return msgType;
     };
     var msgType = dealCorrespondingMsgType();
 
+    // 接收消息
+    var getNews = function (data) {
+        var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
+        var news = data.data.news;
+        var customerNews = JSON.parse($.cookie(data.data.client_id));
+        customerNews.push({'type':'customer', 'time': time, 'news': news});
+        $.cookie(data.data.client_id, JSON.stringify(customerNews));
+        $("#chatBox-content-demo").append(getNewsModdle(time, news));
+    };
+
     // 增加客户连接
     var addCustomerlement = function (data) {
-        document.cookie=data.data.client_id+"="+'';
-        var customer = "<div class='chat-list-people'>" +
+        $.clearCookie();
+        $.cookie(data.data.client_id, '[]');
+        var customer = "<div data-clientId='"+ data.data.client_id +"' class='chat-list-people'>" +
                             "<div>" +
                                 "<img src='img/icon01.png' alt='头像'>" +
                             "</div>" +
@@ -209,8 +225,28 @@
         chatListPeople();
     };
 
+    // 接收聊天模板
+    var getNewsModdle = function (time, news) {
+        return "<div class='clearfloat'>" +
+            "<div class='author-name'>" +
+            "<small class='chat-date'>" + time + "</small> " +
+            "</div>" +
+            "<div class='left'>" +
+            "<div class='chat-avatars'>" +
+            "<img src='img/icon01.png' alt='头像'>" +
+            "</div>" +
+            "<div class='chat-message'>" + news + " </div>" +
+            "</div>" +
+            "</div>";
+    };
 
-
+    // 发送聊天模板
+    var sendNewsModdle = function (time, news) {
+        return "<div class=\"clearfloat\">" +
+        "<div class=\"author-name\"><small class=\"chat-date\">"+time+"</small> </div> " +
+        "<div class=\"right\"> <div class=\"chat-message\"> " + news + " </div> " +
+        "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
+    };
 
     screenFuc();
     function screenFuc() {
@@ -265,10 +301,18 @@
         //进聊天页面
         $(".chat-list-people").each(function () {
             $(this).click(function () {
-                var n = $(this).index();
+                var n = $(this).index()
+                var client_id = $(this).data('clientid');
+                var customerNews = JSON.parse($.cookie(client_id));
                 $(".chatBox-head-one").toggle();
                 $(".chatBox-head-two").toggle();
                 $(".chatBox-list").fadeToggle();
+                $("#chatBox-content-demo").html('');
+                $.each(customerNews, function (key, value) {
+                    $("#chatBox-content-demo").append(
+                        getNewsModdle(value.time, value.news)
+                    );
+                });
                 $(".chatBox-kuang").fadeToggle();
                 //传名字
                 $(".ChatInfoName").text($(this).children(".chat-name").children("p").eq(0).html());
@@ -290,14 +334,12 @@
         $(".chatBox-kuang").fadeToggle(1);
     });
 
-    //      发送信息
+    // 发送信息
     $("#chat-fasong").click(function () {
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
         if (textContent != "") {
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + textContent + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+
+            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
             //发送后清空输入框
             $(".div-textarea").html("");
             //聊天框默认最底部
@@ -307,7 +349,7 @@
         }
     });
 
-    //      发送表情
+    // 发送表情
     $("#chat-biaoqing").click(function () {
         $(".biaoqing-photo").toggle();
     });
@@ -321,7 +363,6 @@
     $(".emoji-picker-image").each(function () {
         $(this).click(function () {
             var bq = $(this).parent().html();
-            console.log(bq)
             $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
                 "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
                 "<div class=\"right\"> <div class=\"chat-message\"> " + bq + " </div> " +
@@ -335,7 +376,7 @@
         })
     });
 
-    //      发送图片
+    // 发送图片
     function selectImg(pic) {
         if (!pic.files || !pic.files[0]) {
             return;
