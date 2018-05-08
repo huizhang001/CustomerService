@@ -30,11 +30,12 @@ class Consts
 
     const C_CONNECT = "C_CONNECT"; // 客户连接
 
+    const C_CLOSE = "C_CLOSE"; // 客户关闭连接
+
     const C_NEWS = "C_NEWS"; // 客户发送消息
 
 //-----------------------------------------------------------------------------日志
     const C_LOG_PATH_NAME = 'customer'; // 客户日志目录名称
 
-    const CS_LOG_PATH_NAME = 'customer_service'; // 客服日志目录名称
-
+    const CS_LOG_PATH_NAME = 'customer_service';
 }

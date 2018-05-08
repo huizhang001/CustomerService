@@ -82,7 +82,7 @@ class CMessageCallBack
      */
     protected function sendNews() {
         // 验证参数
-        $checkResult = $this->request->checkParams(['msg_type', ['data' => ['news']]]);
+        $checkResult = $this->request->checkParams(['msg_type', ['data' => ['news', 'news_type']]]);
         if ($checkResult !== true) {
             Log::instance([Consts::C_LOG_PATH_NAME, $checkResult])->error('转发消息给客服缺少参数');
             $this->customer->sendError("缺少参数:" . $checkResult, $this->data);
@@ -91,7 +91,7 @@ class CMessageCallBack
         // 数据转发给客服
         $sendNews = $this->data['data'];
         $sendNews['client_id'] = $this->request->clientId;
-        Customer::sendUid(Gateway::getSession($this->request->clientId)['customer_service_uid'],
+        Customer::sendUid($_SESSION[$this->request->clientId]['customer_service_id'],
             "新消息", $sendNews, Consts::C_NEWS);
     }
 
@@ -115,8 +115,7 @@ class CMessageCallBack
         CustomerService::changeConnectNum($optimumCusomerService['customer_service_id'],
             Consts::CS_CONNECT_NUM_ADD);
         // 设置session
-        Gateway::setSession($this->request->clientId,
-            ['customer_service_uid' => $optimumCusomerService['customer_service_id']]);
+        $_SESSION[$this->request->clientId] = ['customer_service_id' => $optimumCusomerService['customer_service_id']];
         // 返回客服信息
         $this->customer->sendSuccess("返回客服信息成功", $optimumCusomerService);
         // 告诉客服有人已经连接

@@ -71,6 +71,13 @@ class SMessageCallBack
      * CreateTime: 2018/5/8 上午11:18
      */
     protected function sendNews() {
+        // 验证参数
+        $checkResult = $this->request->checkParams(['msg_type', 'client_id', ['data' => ['news', 'news_type']]]);
+        if ($checkResult !== true) {
+            Log::instance([Consts::C_LOG_PATH_NAME, $checkResult])->error('转发消息给客服缺少参数');
+            $this->customer->sendError("缺少参数:" . $checkResult, $this->data);
+            return false;
+        }
         // 数据转发给客服
         $sendNews = $this->request->data['data'];
         $client_id = $this->request->data['client_id'];
@@ -94,7 +101,7 @@ class SMessageCallBack
         $customerService = $this->customerService->findCustomerService();
         if (!$customerService) return false;
 
-        // 更新uid
+        // 更新client_id
         if (!$this->customerService->saveClientId()) return false;
 
         // 绑定客服uid
