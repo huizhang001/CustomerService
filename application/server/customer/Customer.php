@@ -15,11 +15,6 @@ use Tool\Response\Response;
 
 class Customer
 {
-    // 客服分组名称
-    const C_GROUP_NAME = 'customer';
-
-    // 日志目录名称
-    const LOG_PATH_NAME = 'customer';
 
     /**
      * User: 郭玉朝
@@ -95,10 +90,10 @@ class Customer
             $first++;
         }
         if (empty($optimumCusomerService)) {
-            Log::instance([Customer::LOG_PATH_NAME, $this->data])->error('没有客服在线');
+            Log::instance([Consts::C_LOG_PATH_NAME, $this->data])->error('没有客服在线');
             Gateway::sendToClient($this->clientId,
                 Response::returnResult(Response::CODE_ERROR, "没有客服在线", []
-                    , Consts::MSG_TYPE_CONNECT, Response::DATA_TYPE_JSON,Response::RETURN_TYPE_RETURN));
+                    , Consts::CS_CONNECT, Response::DATA_TYPE_JSON,Response::RETURN_TYPE_RETURN));
             Gateway::closeClient($this->clientId);
         } else {
             $_SESSION[$this->clientId] = ['customer_service_id' => $optimumCusomerService['customer_service_id']];
@@ -132,6 +127,18 @@ class Customer
         Gateway::sendToClient($this->clientId,
             Response::returnResult(Response::CODE_ERROR, $msg, $data
                 , $this->request->msgType, Response::DATA_TYPE_JSON,Response::RETURN_TYPE_RETURN));
+    }
+
+
+    /**
+     * Description: 发送数据给客服
+     * User: 郭玉朝
+     * CreateTime: 2018/5/8 下午12:57
+     */
+    public static function sendUid($uid, $msg, $data, $msgType) {
+        Gateway::sendToUid($uid,
+            Response::returnResult(Response::CODE_SUCCESS, $msg, $data
+                , $msgType, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN));
     }
 
 }

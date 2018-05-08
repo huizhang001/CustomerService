@@ -134,6 +134,8 @@
 
 
 <script src="js/jquery.min.js"></script>
+<script src="js/cookie.js"></script>
+<script src="js/time.js"></script>
 <script>
     var ws;
     var data;
@@ -144,7 +146,7 @@
     function link () {
         ws = new WebSocket("ws://0.0.0.0:8283");//连接服务器
         ws.onopen = function(event){
-            var data = {'msg_type': 'CUSTOMER_CONNECT'};
+            var data = {'msg_type': 'C_CONNECT'};
             ws.send(JSON.stringify(data));
         };
         ws.onmessage = function (event) {
@@ -162,24 +164,33 @@
     var responseType = function (data) {
         switch (data.msg_type) {
             // 用户连接
-            case "CUSTOMER_CONNECT":
+            case "C_CONNECT":
                 msgType.CUSTOMER_CONNECT(data);
                 break;
+            case "CS_NEWS":
+                msgType.CS_NEWS(data);
         }
     };
     /**
      * 处理对应的消息
-     * @returns {{CONNECT: CONNECT, CUSTOMER_CONNECT: CUSTOMER_CONNECT}}
      */
     var dealCorrespondingMsgType = function () {
         var msgType = {
             CUSTOMER_CONNECT: function (data) {
                 dealBackCustomerService(data);
+            },
+            CS_NEWS: function (data) {
+                dealCSNEWS(data);
             }
         };
         return msgType;
     };
     var msgType = dealCorrespondingMsgType();
+
+    // 处理接收到的数据
+    var dealCSNEWS = function (data) {
+        $("#chatBox-content-demo").append(getNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), data.data.news));
+    };
 
     // 处理连接的数据
     var dealBackCustomerService = function (data) {
@@ -187,20 +198,27 @@
         $('.ChatInfoName').append(data.data.client_id);
     };
 
-    // 增加客户连接
-    var sendMsg = function (data) {
-        $.cookie(data.data.client_id, '', { expires: 7 }); // 把此连接放入cookie
-        var customer = "<div class='chat-list-people'>" +
-            "<div>" +
+    // 接收聊天模板
+    var getNewsModdle = function (time, news) {
+        return "<div class='clearfloat'>" +
+            "<div class='author-name'>" +
+            "<small class='chat-date'>" + time + "</small> " +
+            "</div>" +
+            "<div class='left'>" +
+            "<div class='chat-avatars'>" +
             "<img src='img/icon01.png' alt='头像'>" +
             "</div>" +
-            "<div class='chat-name'>" +
-            " <p>" + data.data.client_id + "</p>" +
-            " </div> " +
-            "<div class='message-num'>10</div>" +
+            "<div class='chat-message'>" + news + " </div>" +
+            "</div>" +
             "</div>";
-        $('.chatBox-list').append(customer);
-        chatListPeople();
+    };
+
+    // 发送聊天模板
+    var sendNewsModdle = function (time, news) {
+        return "<div class=\"clearfloat\">" +
+            "<div class=\"author-name\"><small class=\"chat-date\">"+time+"</small> </div> " +
+            "<div class=\"right\"> <div class=\"chat-message\"> " + news + " </div> " +
+            "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
     };
 
     screenFuc();
@@ -279,16 +297,13 @@
         $(".chatBox-kuang").fadeToggle(1);
     });
 
-    //      发送信息
+    // 发送信息
     $("#chat-fasong").click(function () {
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
-        var sendData = JSON.stringify({'msg_type':'CUSTOMER_NEWS', 'data': {'news':textContent}});
-        ws.send(sendData);
         if (textContent != "") {
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + textContent + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            var sendData = JSON.stringify({'msg_type':'C_NEWS', 'data': {'news':textContent}});
+            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
+            ws.send(sendData);
             //发送后清空输入框
             $(".div-textarea").html("");
             //聊天框默认最底部

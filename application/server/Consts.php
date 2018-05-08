@@ -8,12 +8,33 @@ namespace App\Server;
 
 class Consts
 {
-    const MSG_TYPE_CONNECT = "CONNECT"; // 连接
 
-    const MSG_TYPE_CLOSE = "CLOSE"; // 关闭连接
+//-----------------------------------------------------------------------------客服
 
-    const CUSTOMER_CONNECT = "CUSTOMER_CONNECT"; // 用户连接
+    //==========================================(客服的msg_type)
 
-    const CUSTOMER_NEWS = "CUSTOMER_NEWS"; // 用户发送消息
+    const CS_CONNECT = "CS_CONNECT"; // 连接
+
+    const CS_CLOSE = "CS_CLOSE"; // 关闭连接
+
+    const CS_NEWS = "CS_NEWS"; // 客服发送消息
+
+    //===========================================(普通consts)
+
+    const CS_CONNECT_NUM_ADD = "CS_CONNECT_NUM_ADD"; // 增加客服服务客户的连接数量
+
+    const CS_CONNECT_NUM_REDUCE = 'CS_CONNECT_NUM_REDUCE'; // 减少客服服务客户的连接数量
+
+//-----------------------------------------------------------------------------客服(客户的msg_type)
+    //==========================================(客户的msg_type)
+
+    const C_CONNECT = "C_CONNECT"; // 客户连接
+
+    const C_NEWS = "C_NEWS"; // 客户发送消息
+
+//-----------------------------------------------------------------------------日志
+    const C_LOG_PATH_NAME = 'customer'; // 客户日志目录名称
+
+    const CS_LOG_PATH_NAME = 'customer_service'; // 客服日志目录名称
 
 }
