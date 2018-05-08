@@ -154,6 +154,8 @@
             console.log(data);
             if (data.return_code == 200) {
                 responseType(data);
+            } else {
+                alert(data.return_msg);
             }
         }
         ws.onclose = function(event){};
@@ -197,6 +199,22 @@
         console.log(data);
         $('.ChatInfoName').append(data.data.client_id);
     };
+
+    // 发送信息
+    $("#chat-fasong").click(function () {
+        var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
+        if (textContent != "") {
+            var sendData = JSON.stringify({'msg_type':'C_NEWS', 'data': {'news_type': 'ordinary', 'news':textContent}});
+            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
+            ws.send(sendData);
+            //发送后清空输入框
+            $(".div-textarea").html("");
+            //聊天框默认最底部
+            $(document).ready(function () {
+                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+            });
+        }
+    });
 
     // 接收聊天模板
     var getNewsModdle = function (time, news) {
@@ -295,22 +313,6 @@
         $(".chatBox-head-two").toggle(1);
         $(".chatBox-list").fadeToggle(1);
         $(".chatBox-kuang").fadeToggle(1);
-    });
-
-    // 发送信息
-    $("#chat-fasong").click(function () {
-        var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
-        if (textContent != "") {
-            var sendData = JSON.stringify({'msg_type':'C_NEWS', 'data': {'news':textContent}});
-            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
-            ws.send(sendData);
-            //发送后清空输入框
-            $(".div-textarea").html("");
-            //聊天框默认最底部
-            $(document).ready(function () {
-                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-            });
-        }
     });
 
     // 发送表情

@@ -138,6 +138,9 @@
 <script>
     var ws;
     var clientId;
+    const C = 'customer'; // 客户
+    const CS = 'customer_service'; // 客户
+    const NEWS_TYPE_IMAGE = 'image'; // 发送的为图片
     $(function(){
         link();
     })
@@ -172,8 +175,14 @@
             // 接收用户消息
             case "C_NEWS":
                 msgType.CUSTOMER_NEWS(data);
+                break;
+            // 客户关闭连接
+            case "C_CLOSE":
+                msgType.C_CLOSE(data);
+                break;
         }
     };
+    
     /**
      * 处理对应的消息
      * @returns {{CONNECT: CONNECT, CUSTOMER_CONNECT: CUSTOMER_CONNECT}}
@@ -188,17 +197,28 @@
             },
             CUSTOMER_NEWS: function (data) {
                 getNews(data);
+            },
+            C_CLOSE: function (data) {
+                cClose(data);
             }
         };
         return msgType;
     };
     var msgType = dealCorrespondingMsgType();
 
+    // 用户关闭了连接
+    var cClose = function (data) {
+        $.cookie(data.data.client_id, null); // 清理此连接的缓存
+        console.log(data);
+        $('.'+data.data.client_id).remove();
+        chatListPeople();
+    };
+
     // 接收消息
     var getNews = function (data) {
         var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
         var news = data.data.news;
-        setNewsCookie('customer', data.data.client_id, news);
+        setNewsCookie(C, data.data.client_id, news);
         $("#chatBox-content-demo").append(getNewsModdle(time, news));
     };
 
@@ -207,8 +227,9 @@
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>');
         var sendData;
         if (textContent != "") {
-            sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId, 'data': {'news': textContent}});
-            setNewsCookie('customer_service', clientId, textContent); // 把客服消息放入cookie
+            sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
+                'data': {'news_type': 'ordinary', 'news': textContent}});
+            setNewsCookie(CS, clientId, textContent); // 把客服消息放入cookie
             console.log(sendData);
             ws.send(sendData);
             $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
@@ -232,7 +253,7 @@
     var addCustomerlement = function (data) {
         $.clearCookie();
         $.cookie(data.data.client_id, '[]');
-        var customer = "<div data-clientId='"+ data.data.client_id +"' class='chat-list-people'>" +
+        var customer = "<div data-clientId='"+ data.data.client_id +"' class='chat-list-people " + data.data.client_id + "'>" +
                             "<div>" +
                                 "<img src='img/icon01.png' alt='头像'>" +
                             "</div>" +
@@ -261,10 +282,16 @@
     };
 
     // 发送聊天模板
-    var sendNewsModdle = function (time, news) {
+    var sendNewsModdle = function (time, news, newsType) {
+        var data;
+        if (newsType == NEWS_TYPE_IMAGE) {
+            data = "<img src='" + news + "'>"
+        } else {
+            data = news;
+        }
         return "<div class=\"clearfloat\">" +
         "<div class=\"author-name\"><small class=\"chat-date\">"+time+"</small> </div> " +
-        "<div class=\"right\"> <div class=\"chat-message\"> " + news + " </div> " +
+        "<div class=\"right\"> <div class=\"chat-message\"> " + data + " </div> " +
         "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
     };
 
@@ -372,10 +399,12 @@
     $(".emoji-picker-image").each(function () {
         $(this).click(function () {
             var bq = $(this).parent().html();
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + bq + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
+            setNewsCookie(CS, clientId, bq);
+            sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
+                'data': {'news_type': 'emoji', 'news': bq}});
+            $(".chatBox-content-demo").append(sendNewsModdle(time, bq));
+            ws.send(sendData);
             //发送后关闭表情框
             $(".biaoqing-photo").toggle();
             //聊天框默认最底部
@@ -393,10 +422,8 @@
         var reader = new FileReader();
         reader.onload = function (evt) {
             var images = evt.target.result;
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"><img src=" + images + "></div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
+            $(".chatBox-content-demo").append(sendNewsModdle(time, images, NEWS_TYPE_IMAGE));
             //聊天框默认最底部
             $(document).ready(function () {
                 $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
@@ -405,7 +432,6 @@
         reader.readAsDataURL(pic.files[0]);
     }
 </script>
-
 <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';">
 </div>
 </body>
