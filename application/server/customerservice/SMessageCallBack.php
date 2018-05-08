@@ -55,10 +55,28 @@ class SMessageCallBack
      */
     public function main()
     {
-        // 客服连接
-        if ($this->request->msgType == Consts::MSG_TYPE_CONNECT) {
-            $this->connection();
+        switch ($this->request->msgType) {
+            case Consts::CS_CONNECT: // 客服连接
+                $this->connection();
+                break;
+            case Consts::CS_NEWS: // 客服发送给客服消息
+                $this->sendNews();
+                break;
         }
+    }
+
+    /**
+     * Description: 发送消息给客户
+     * User: 郭玉朝
+     * CreateTime: 2018/5/8 上午11:18
+     */
+    protected function sendNews() {
+        // 数据转发给客服
+        $sendNews = $this->request->data['data'];
+        $client_id = $this->request->data['client_id'];
+        Gateway::sendToClient($client_id,
+            Response::returnResult(Response::CODE_SUCCESS, "新消息",  $sendNews
+                , Consts::CS_NEWS, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN) );
     }
 
     /**

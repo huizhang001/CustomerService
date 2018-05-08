@@ -17,13 +17,6 @@ use Tool\Response\Response;
 class CustomerService
 {
 
-    // 日志目录名称
-    const LOG_PATH_NAME = 'customer_service';
-
-    const CONNECT_NUM_ADD = "CONNECT_NUM_ADD";
-
-    const CONNECT_NUM_REDUCE = 'CONNECT_NUM_REDUCE';
-
     /**
      * User: 郭玉朝
      * CreateTime: 2018/5/4 上午9:37
@@ -92,12 +85,12 @@ class CustomerService
         ];
         $customerServiceInfo = CustomerServiceModel::instance()->findInfo($condition);
         if (!$customerServiceInfo) {
-            Log::instance([CustomerService::LOG_PATH_NAME, $this->data])->error('没有找到此客服');
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->data])->error('没有找到此客服');
             $this->sendError("没有找到此客服", $this->data);
             Gateway::closeClient($this->clientId);
         }
         if ($customerServiceInfo['client_id'] != '') {
-            Log::instance([CustomerService::LOG_PATH_NAME, $this->data])->error('不能重复登录');
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->data])->error('不能重复登录');
             $this->sendError("不能重复登录", $this->data);
             Gateway::closeClient($this->clientId);
         }
@@ -115,7 +108,7 @@ class CustomerService
         $data = ['client_id' => $this->clientId];
         $saveResult = CustomerServiceModel::instance()->editInfo($condition, $data);
         if (!$saveResult) {
-            Log::instance([CustomerService::LOG_PATH_NAME, $this->data])->error('保存连接到库失败');
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->data])->error('保存连接到库失败');
             $this->sendError("保存连接到库失败", $this->data);
             Gateway::closeClient($this->clientId);
         }
@@ -130,7 +123,7 @@ class CustomerService
     public function checkConnectionParams(array $params) {
         $checkParams = $this->request->checkParams($params);
         if ($checkParams !== true) {
-            Log::instance([CustomerService::LOG_PATH_NAME, $this->data])->error('缺少必要参数:'.$checkParams);
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->data])->error('缺少必要参数:'.$checkParams);
             $this->sendError('缺少必要参数:'.$checkParams, $this->data);
             Gateway::closeClient($this->clientId);
         }
@@ -172,7 +165,7 @@ class CustomerService
      */
     public static function setAllClientIdNull() {
         CustomerServiceModel::instance()->setAllClientIdNull();
-        Log::instance([CustomerService::LOG_PATH_NAME, []])->trace('初始化客服连接完成');
+        Log::instance([Consts::CS_LOG_PATH_NAME, []])->trace('初始化客服连接完成');
     }
 
     /**
@@ -181,9 +174,9 @@ class CustomerService
      * CreateTime: 2018/5/4 下午5:44
      * @param array $condition
      */
-    public static function changeConnectNum(string $id, string $changeType = CustomerService::CONNECT_NUM_ADD) {
+    public static function changeConnectNum(string $id, string $changeType = Consts::CS_CONNECT_NUM_ADD) {
         try {
-            if ($changeType == CustomerService::CONNECT_NUM_ADD) {
+            if ($changeType == Consts::CS_CONNECT_NUM_ADD) {
                 $changeType = 'inc';
             } else {
                 $changeType = 'dec';
@@ -192,7 +185,7 @@ class CustomerService
                 return true;
             }
         } catch (DbException $e) {
-            Log::instance([CustomerService::LOG_PATH_NAME, []])->trace('更改客服连接数量失败');
+            Log::instance([Consts::CS_LOG_PATH_NAME, []])->trace('更改客服连接数量失败');
         }
         return  false;
     }

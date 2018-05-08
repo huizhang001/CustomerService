@@ -71,7 +71,6 @@
                                 <!--<div class="chat-avatars"><img src="img/icon02.png" alt="头像"></div>-->
                             <!--</div>-->
                         <!--</div>-->
-
                     </div>
                 </div>
                 <div class="chatBox-send">
@@ -133,22 +132,19 @@
         </div>
     </div>
 </div>
-
-
 <script src="js/jquery.min.js"></script>
 <script src="js/cookie.js"></script>
 <script src="js/time.js"></script>
-
-
 <script>
     var ws;
+    var clientId;
     $(function(){
         link();
     })
     function link () {
         ws = new WebSocket("ws://0.0.0.0:8282");//连接服务器
         ws.onopen = function(event){
-            var data = {'msg_type': 'CONNECT', 'customer_service_name': 'kefu1', 'customer_service_sign': '123456'};
+            var data = {'msg_type': 'CS_CONNECT', 'customer_service_name': 'kefu1', 'customer_service_sign': '123456'};
             ws.send(JSON.stringify(data));
         };
         ws.onmessage = function (event) {
@@ -166,15 +162,15 @@
     var responseType = function (data) {
         switch (data.msg_type) {
             // 客服连接
-            case "CONNECT":
+            case "CS_CONNECT":
                 msgType.CONNECT(data);
                 break;
             // 用户连接
-            case "CUSTOMER_CONNECT":
+            case "C_CONNECT":
                 msgType.CUSTOMER_CONNECT(data);
                 break;
             // 接收用户消息
-            case "CUSTOMER_NEWS":
+            case "C_NEWS":
                 msgType.CUSTOMER_NEWS(data);
         }
     };
@@ -202,10 +198,34 @@
     var getNews = function (data) {
         var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
         var news = data.data.news;
-        var customerNews = JSON.parse($.cookie(data.data.client_id));
-        customerNews.push({'type':'customer', 'time': time, 'news': news});
-        $.cookie(data.data.client_id, JSON.stringify(customerNews));
+        setNewsCookie('customer', data.data.client_id, news);
         $("#chatBox-content-demo").append(getNewsModdle(time, news));
+    };
+
+    // 发送信息
+    $("#chat-fasong").click(function () {
+        var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>');
+        var sendData;
+        if (textContent != "") {
+            sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId, 'data': {'news': textContent}});
+            setNewsCookie('customer_service', clientId, textContent); // 把客服消息放入cookie
+            console.log(sendData);
+            ws.send(sendData);
+            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
+            //发送后清空输入框
+            $(".div-textarea").html("");
+            //聊天框默认最底部
+            $(document).ready(function () {
+                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
+            });
+        }
+    });
+
+    // 设置消息cookie
+    var setNewsCookie = function (type, key, news) {
+        var customerNews = JSON.parse($.cookie(key));
+        customerNews.push({'type': type, 'time': new Date().Format("yyyy-MM-dd hh:mm:ss"), 'news': news});
+        $.cookie(key, JSON.stringify(customerNews));
     };
 
     // 增加客户连接
@@ -301,17 +321,21 @@
         //进聊天页面
         $(".chat-list-people").each(function () {
             $(this).click(function () {
-                var n = $(this).index()
-                var client_id = $(this).data('clientid');
-                var customerNews = JSON.parse($.cookie(client_id));
+                var n = $(this).index();
+                var sendNews;
+                clientId = $(this).data('clientid');
+                var customerNews = JSON.parse($.cookie(clientId));
                 $(".chatBox-head-one").toggle();
                 $(".chatBox-head-two").toggle();
                 $(".chatBox-list").fadeToggle();
                 $("#chatBox-content-demo").html('');
                 $.each(customerNews, function (key, value) {
-                    $("#chatBox-content-demo").append(
-                        getNewsModdle(value.time, value.news)
-                    );
+                    if (value.type == 'customer') {
+                        sendNews = getNewsModdle(value.time, value.news);
+                    } else {
+                        sendNews = sendNewsModdle(value.time, value.news);
+                    }
+                    $("#chatBox-content-demo").append(sendNews);
                 });
                 $(".chatBox-kuang").fadeToggle();
                 //传名字
@@ -332,21 +356,6 @@
         $(".chatBox-head-two").toggle(1);
         $(".chatBox-list").fadeToggle(1);
         $(".chatBox-kuang").fadeToggle(1);
-    });
-
-    // 发送信息
-    $("#chat-fasong").click(function () {
-        var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
-        if (textContent != "") {
-
-            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
-            //发送后清空输入框
-            $(".div-textarea").html("");
-            //聊天框默认最底部
-            $(document).ready(function () {
-                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-            });
-        }
     });
 
     // 发送表情

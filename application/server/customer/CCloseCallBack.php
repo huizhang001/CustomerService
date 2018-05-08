@@ -6,6 +6,7 @@
  */
 namespace App\Server\Customer;
 use App\Common\Model\CustomerServiceModel;
+use App\Server\Consts;
 use App\Server\CustomerService\CustomerService;
 use GatewayWorker\Lib\Gateway;
 use Tool\Log\Log;
@@ -50,9 +51,9 @@ class CCloseCallBack
         // Gateway::onClose回调里无法使用Gateway::getSession来获得当前用户的session数据，但是仍然可以使用$_SESSION变量获得。
         if (isset($_SESSION[$this->clientId])) {
             $customerServiceId = $_SESSION[$this->clientId]['customer_service_id'];
-            CustomerService::changeConnectNum($customerServiceId, CustomerService::CONNECT_NUM_REDUCE);
+            CustomerService::changeConnectNum($customerServiceId, Consts::CS_CONNECT_NUM_REDUCE);
         } else {
-            Log::instance([Customer::LOG_PATH_NAME, $this->clientId])->error('减少客服服务数量失败');
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->clientId])->error('减少客服服务数量失败');
         }
     }
 }

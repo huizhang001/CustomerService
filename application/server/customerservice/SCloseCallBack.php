@@ -6,6 +6,7 @@
  */
 namespace App\Server\CustomerService;
 use App\Common\Model\CustomerServiceModel;
+use App\Server\Consts;
 use GatewayWorker\Gateway;
 use Tool\Log\Log;
 class SCloseCallBack
@@ -49,7 +50,7 @@ class SCloseCallBack
         $condition = ['client_id' => $this->clientId];
         $data = ['client_id' => null];
         if (!CustomerServiceModel::instance()->editInfo($condition, $data)) {
-            Log::instance(['customer_service', $this->clientId])->error('清除数据库连接失败');
+            Log::instance([Consts::CS_LOG_PATH_NAME, $this->clientId])->error('清除数据库连接失败');
         }
     }
 }

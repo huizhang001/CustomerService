@@ -9,6 +9,7 @@ namespace App\Server\Customer;
 use App\Server\CustomerService\CustomerService;
 use App\Server\Consts;
 use \GatewayWorker\Lib\Gateway;
+use Tool\Log\Log;
 use Tool\Request\Request;
 use Tool\Response\Response;
 
@@ -65,10 +66,10 @@ class CMessageCallBack
     public function main()
     {
         switch ($this->request->msgType) {
-            case Consts::CUSTOMER_CONNECT:
+            case Consts::C_CONNECT:
                 $this->connection();
                 break;
-            case Consts::CUSTOMER_NEWS:
+            case Consts::C_NEWS:
                 $this->sendNews();
                 break;
         }
@@ -80,13 +81,18 @@ class CMessageCallBack
      * CreateTime: 2018/5/6 下午5:26
      */
     protected function sendNews() {
+        // 验证参数
+        $checkResult = $this->request->checkParams(['msg_type', ['data' => ['news']]]);
+        if ($checkResult !== true) {
+            Log::instance([Consts::C_LOG_PATH_NAME, $checkResult])->error('转发消息给客服缺少参数');
+            $this->customer->sendError("缺少参数:" . $checkResult, $this->data);
+            return false;
+        }
         // 数据转发给客服
         $sendNews = $this->data['data'];
         $sendNews['client_id'] = $this->request->clientId;
-        $customerServiceUid = Gateway::getSession($this->request->clientId)['customer_service_uid'];
-        Gateway::sendToUid($customerServiceUid,
-            Response::returnResult(Response::CODE_SUCCESS, "新消息",  $sendNews
-                , Consts::CUSTOMER_NEWS, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN) );
+        Customer::sendUid(Gateway::getSession($this->request->clientId)['customer_service_uid'],
+            "新消息", $sendNews, Consts::C_NEWS);
     }
 
     /**
@@ -96,20 +102,25 @@ class CMessageCallBack
      */
     protected function connection()
     {
+        // 验证参数
+        $checkResult = $this->request->checkParams(['msg_type']);
+        if ($checkResult !== true) {
+            $this->customer->sendError("缺少参数:" . $checkResult, $this->data);
+            return false;
+        }
         // 选择最佳的客服
         $optimumCusomerService = $this->customer->optimumCusomerService();
         if (empty($optimumCusomerService)) return false;
         // 更改客服的服务人数数量
         CustomerService::changeConnectNum($optimumCusomerService['customer_service_id'],
-            CustomerService::CONNECT_NUM_ADD);
+            Consts::CS_CONNECT_NUM_ADD);
         // 设置session
         Gateway::setSession($this->request->clientId,
             ['customer_service_uid' => $optimumCusomerService['customer_service_id']]);
         // 返回客服信息
         $this->customer->sendSuccess("返回客服信息成功", $optimumCusomerService);
         // 告诉客服有人已经连接
-        Gateway::sendToUid($optimumCusomerService['customer_service_id'],
-            Response::returnResult(Response::CODE_SUCCESS, "有新的连接", ['client_id' => $this->request->clientId]
-                , Consts::CUSTOMER_CONNECT, Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN) );
+        Customer::sendUid($optimumCusomerService['customer_service_id'], "有新的连接",
+            ['client_id' => $this->request->clientId], Consts::C_CONNECT);
     }
 }
