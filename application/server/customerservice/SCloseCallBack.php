@@ -6,7 +6,7 @@
  */
 namespace App\Server\CustomerService;
 use App\Common\Model\CustomerServiceModel;
-use App\Server\Consts;
+use App\Consts;
 use GatewayWorker\Gateway;
 use Tool\Log\Log;
 class SCloseCallBack

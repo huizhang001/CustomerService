@@ -7,7 +7,7 @@
 namespace App\Server\CustomerService;
 
 use App\Common\Model\CustomerServiceModel;
-use App\Server\Consts;
+use App\Consts;
 use GatewayWorker\Lib\Gateway;
 use think\exception\DbException;
 use Tool\Log\Log;

@@ -6,7 +6,7 @@
  */
 namespace App\Server\Customer;
 use App\Common\Model\CustomerServiceModel;
-use App\Server\Consts;
+use App\Consts;
 use App\Server\CustomerService\CustomerService;
 use GatewayWorker\Lib\Gateway;
 use Tool\Log\Log;

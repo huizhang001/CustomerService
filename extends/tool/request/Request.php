@@ -5,7 +5,9 @@
  * Description:
  */
 namespace Tool\Request;
+use App\Consts;
 use Tool\Encrypt\Encrypt;
+use Tool\Log\Log;
 use Tool\Response\Response;
 
 class Request

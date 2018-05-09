@@ -11,6 +11,7 @@ use Tool\Response\Response;
 use Tool\Request\Request;
 use App\Api\ApiInter\CustomerServiceApiInter;
 use Tool\Log\Log;
+use App\Consts;
 
 class CustomerServiceApi implements CustomerServiceApiInter
 {
@@ -159,5 +160,13 @@ class CustomerServiceApi implements CustomerServiceApiInter
         }
         return true;
     }
+
+    public function isOnlineCustomerService()
+    {
+        // TODO: Implement isOnlineCustomerService() method.
+        Response::returnResult(Response::CODE_SUCCESS, $this->request->data, Consts::CS_ADD_IMG,
+            Response::DATA_TYPE_JSON, Response::RETURN_TYPE_RETURN);
+    }
+
 
 }

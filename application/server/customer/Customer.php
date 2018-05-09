@@ -7,7 +7,7 @@
 namespace App\Server\Customer;
 
 use App\Common\Model\CustomerServiceModel;
-use App\Server\Consts;
+use App\Consts;
 use GatewayWorker\Lib\Gateway;
 use Tool\Log\Log;
 use Tool\Request\Request;

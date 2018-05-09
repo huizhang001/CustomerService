@@ -140,7 +140,10 @@
     var clientId;
     const C = 'customer'; // 客户
     const CS = 'customer_service'; // 客户
-    const NEWS_TYPE_IMAGE = 'image'; // 发送的为图片
+    const MSG_TYPE_CS_ADD_IMG = "CS_ADD_IMG";
+    const NEWS_TYPE_IMAGE = 'image'; // 图片
+    const NEWS_TYPE_EMOJI = 'emoji'; // 表情
+    const NEWS_TYPE_ORDINARY = 'ordinary' // 普通
     $(function(){
         link();
     })
@@ -228,8 +231,8 @@
         var sendData;
         if (textContent != "") {
             sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
-                'data': {'news_type': 'ordinary', 'news': textContent}});
-            setNewsCookie(CS, clientId, textContent); // 把客服消息放入cookie
+                'data': {'news_type': NEWS_TYPE_ORDINARY, 'news': textContent}});
+            setNewsCookie(CS, clientId, textContent, NEWS_TYPE_ORDINARY); // 把客服消息放入cookie
             console.log(sendData);
             ws.send(sendData);
             $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
@@ -243,10 +246,12 @@
     });
 
     // 设置消息cookie
-    var setNewsCookie = function (type, key, news) {
+    var setNewsCookie = function (type, key, news, news_type) {
         var customerNews = JSON.parse($.cookie(key));
-        customerNews.push({'type': type, 'time': new Date().Format("yyyy-MM-dd hh:mm:ss"), 'news': news});
+        customerNews.push({'type': type, 'time': new Date().Format("yyyy-MM-dd hh:mm:ss"), 'news': news, 'news_type': news_type});
+        console.log(customerNews);
         $.cookie(key, JSON.stringify(customerNews));
+        console.log($.cookie(key));
     };
 
     // 增加客户连接
@@ -268,6 +273,12 @@
 
     // 接收聊天模板
     var getNewsModdle = function (time, news) {
+        var data;
+        if (newsType == NEWS_TYPE_IMAGE) {
+            data = "<img src='" + news + "'>"
+        } else {
+            data = news;
+        }
         return "<div class='clearfloat'>" +
             "<div class='author-name'>" +
             "<small class='chat-date'>" + time + "</small> " +
@@ -276,7 +287,7 @@
             "<div class='chat-avatars'>" +
             "<img src='img/icon01.png' alt='头像'>" +
             "</div>" +
-            "<div class='chat-message'>" + news + " </div>" +
+            "<div class='chat-message'>" + data + " </div>" +
             "</div>" +
             "</div>";
     };
@@ -352,15 +363,31 @@
                 var sendNews;
                 clientId = $(this).data('clientid');
                 var customerNews = JSON.parse($.cookie(clientId));
+                console.log(customerNews);
                 $(".chatBox-head-one").toggle();
                 $(".chatBox-head-two").toggle();
                 $(".chatBox-list").fadeToggle();
                 $("#chatBox-content-demo").html('');
                 $.each(customerNews, function (key, value) {
-                    if (value.type == 'customer') {
-                        sendNews = getNewsModdle(value.time, value.news);
+                    if (value.type == C) {
+                        if (value.news_type == NEWS_TYPE_IMAGE) {
+                            sendNews = getNewsModdle(value.time, value.news, NEWS_TYPE_IMAGE);
+                        } else if (value.news_type == NEWS_TYPE_EMOJI) {
+                            sendNews = getNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
+                        } else if (value.news_type == NEWS_TYPE_ORDINARY) {
+                            sendNews = getNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
+                        }
                     } else {
-                        sendNews = sendNewsModdle(value.time, value.news);
+                        if (value.news_type == NEWS_TYPE_IMAGE) {
+                            console.log("我是图片");
+                            sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_IMAGE);
+                        } else if (value.news_type == NEWS_TYPE_EMOJI) {
+                            console.log("我是表情");
+                            sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
+                        } else if (value.news_type == NEWS_TYPE_ORDINARY) {
+                            console.log("我是普通文字");
+                            sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
+                        }
                     }
                     $("#chatBox-content-demo").append(sendNews);
                 });
@@ -400,9 +427,9 @@
         $(this).click(function () {
             var bq = $(this).parent().html();
             var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
-            setNewsCookie(CS, clientId, bq);
+            setNewsCookie(CS, clientId, bq, NEWS_TYPE_EMOJI);
             sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
-                'data': {'news_type': 'emoji', 'news': bq}});
+                'data': {'news_type': NEWS_TYPE_EMOJI, 'news': bq}});
             $(".chatBox-content-demo").append(sendNewsModdle(time, bq));
             ws.send(sendData);
             //发送后关闭表情框
@@ -416,14 +443,36 @@
 
     // 发送图片
     function selectImg(pic) {
+        var url = 'http://localhost/CustomerService/public/index.php/is_online_customer_service';
+        var data;
         if (!pic.files || !pic.files[0]) {
             return;
         }
+        //发送数据
         var reader = new FileReader();
         reader.onload = function (evt) {
             var images = evt.target.result;
+            data = JSON.stringify({'base64_img': images, 'customer_service_name': 'kefu1', 'msg_type': MSG_TYPE_CS_ADD_IMG});
+            $.ajax({
+                url:url, /*去过那个php文件*/
+                type:'POST',  /*提交方式*/
+                data:data,
+                cache: false,
+                contentType: false,        /*不可缺*/
+                processData: false,         /*不可缺*/
+                success:function(data){
+
+                },
+                error:function(){
+                    alert('上传出错');
+                }
+            });
             var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
+            setNewsCookie(CS, clientId, images, NEWS_TYPE_IMAGE);
+            sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
+                'data': {'news_type': NEWS_TYPE_IMAGE, 'news': images}});
             $(".chatBox-content-demo").append(sendNewsModdle(time, images, NEWS_TYPE_IMAGE));
+            // ws.send(sendData);
             //聊天框默认最底部
             $(document).ready(function () {
                 $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
