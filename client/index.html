@@ -138,15 +138,16 @@
 <script>
     var ws;
     var clientId;
+    var sendImgUrl;
     const C = 'customer'; // 客户
     const CS = 'customer_service'; // 客户
     const MSG_TYPE_CS_ADD_IMG = "CS_ADD_IMG";
     const NEWS_TYPE_IMAGE = 'image'; // 图片
     const NEWS_TYPE_EMOJI = 'emoji'; // 表情
-    const NEWS_TYPE_ORDINARY = 'ordinary' // 普通
+    const NEWS_TYPE_ORDINARY = 'ordinary';// 普通
     $(function(){
         link();
-    })
+    });
     function link () {
         ws = new WebSocket("ws://0.0.0.0:8282");//连接服务器
         ws.onopen = function(event){
@@ -159,7 +160,7 @@
             if (data.return_code === 200) {
                 responseType(data);
             }
-        }
+        };
         ws.onclose = function(event){alert("已经与服务器断开连接\r\n当前连接状态："+this.readyState);};
         ws.onerror = function(event){alert("WebSocket异常！");};
     }
@@ -219,10 +220,11 @@
 
     // 接收消息
     var getNews = function (data) {
+        console.log(data);
         var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
         var news = data.data.news;
         setNewsCookie(C, data.data.client_id, news);
-        $("#chatBox-content-demo").append(getNewsModdle(time, news));
+        $("#chatBox-content-demo").append(getNewsModdle(time, news, data.data.news_type));
     };
 
     // 发送信息
@@ -272,7 +274,7 @@
     };
 
     // 接收聊天模板
-    var getNewsModdle = function (time, news) {
+    var getNewsModdle = function (time, news, newsType) {
         var data;
         if (newsType == NEWS_TYPE_IMAGE) {
             data = "<img src='" + news + "'>"
@@ -443,7 +445,7 @@
 
     // 发送图片
     function selectImg(pic) {
-        var url = 'http://localhost/CustomerService/public/index.php/is_online_customer_service';
+        var url = 'http://localhost/CustomerService/public/index.php/save_img';
         var data;
         if (!pic.files || !pic.files[0]) {
             return;
@@ -454,25 +456,24 @@
             var images = evt.target.result;
             data = JSON.stringify({'base64_img': images, 'customer_service_name': 'kefu1', 'msg_type': MSG_TYPE_CS_ADD_IMG});
             $.ajax({
-                url:url, /*去过那个php文件*/
-                type:'POST',  /*提交方式*/
-                data:data,
-                cache: false,
-                contentType: false,        /*不可缺*/
-                processData: false,         /*不可缺*/
+                type:"POST",
+                url: url,
+                data: data,
+                dataType:"json",
+                async: false,
                 success:function(data){
-
+                    sendImgUrl = data.data;
                 },
-                error:function(){
-                    alert('上传出错');
+                error:function(jqXHR){
+                    alert("上传出错");
                 }
             });
             var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
             setNewsCookie(CS, clientId, images, NEWS_TYPE_IMAGE);
             sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
-                'data': {'news_type': NEWS_TYPE_IMAGE, 'news': images}});
+                'data': {'news_type': NEWS_TYPE_IMAGE, 'news': sendImgUrl}});
             $(".chatBox-content-demo").append(sendNewsModdle(time, images, NEWS_TYPE_IMAGE));
-            // ws.send(sendData);
+            ws.send(sendData);
             //聊天框默认最底部
             $(document).ready(function () {
                 $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);

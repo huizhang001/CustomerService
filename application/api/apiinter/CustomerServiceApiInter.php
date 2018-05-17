@@ -18,6 +18,4 @@ interface CustomerServiceApiInter
 
     public function findCustomerService();
 
-    public function isOnlineCustomerService();
-
 }

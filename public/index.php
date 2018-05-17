@@ -7,6 +7,7 @@
 // 定义 PUBLIC_PATH
 
 define('PUBLIC_PATH', __DIR__);
+define('ROOT_PATH', 'http://' . $_SERVER['HTTP_HOST'] . '/' . explode("/", $_SERVER['SCRIPT_NAME'])['1']);
 
 // 启动器
 

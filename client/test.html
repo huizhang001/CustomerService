@@ -139,6 +139,14 @@
 <script>
     var ws;
     var data;
+    const C = 'customer'; // 客户
+    const C_NEWS = 'C_NEWS'; // 客户端消息
+    const CS = 'customer_service'; // 客户
+    const CS_NEWS = 'CS_NEWS'; // 服务器消息
+    const MSG_TYPE_CS_ADD_IMG = "CS_ADD_IMG";
+    const NEWS_TYPE_IMAGE = 'image'; // 图片
+    const NEWS_TYPE_EMOJI = 'emoji'; // 表情
+    const NEWS_TYPE_ORDINARY = 'ordinary';// 普通
     $(function(){
         link();
         index();
@@ -191,7 +199,9 @@
 
     // 处理接收到的数据
     var dealCSNEWS = function (data) {
-        $("#chatBox-content-demo").append(getNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), data.data.news));
+        console.log(data);
+        $("#chatBox-content-demo").append(getNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"),
+            data.data.news, data.data.news_type));
     };
 
     // 处理连接的数据
@@ -205,7 +215,9 @@
         var textContent = $(".div-textarea").html().replace(/[\n\r]/g, '<br>')
         if (textContent != "") {
             var sendData = JSON.stringify({'msg_type':'C_NEWS', 'data': {'news_type': 'ordinary', 'news':textContent}});
-            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
+            $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent,
+            NEWS_TYPE_ORDINARY));
+            console.log(sendData);
             ws.send(sendData);
             //发送后清空输入框
             $(".div-textarea").html("");
@@ -217,7 +229,13 @@
     });
 
     // 接收聊天模板
-    var getNewsModdle = function (time, news) {
+    var getNewsModdle = function (time, news, news_type) {
+        var data;
+        if (news_type == NEWS_TYPE_IMAGE) {
+            data = "<img src='" + news + "'>";
+        } else {
+            data = news;
+        }
         return "<div class='clearfloat'>" +
             "<div class='author-name'>" +
             "<small class='chat-date'>" + time + "</small> " +
@@ -226,16 +244,22 @@
             "<div class='chat-avatars'>" +
             "<img src='img/icon01.png' alt='头像'>" +
             "</div>" +
-            "<div class='chat-message'>" + news + " </div>" +
+            "<div class='chat-message'>" + data + " </div>" +
             "</div>" +
             "</div>";
     };
 
     // 发送聊天模板
-    var sendNewsModdle = function (time, news) {
+    var sendNewsModdle = function (time, news, newsType) {
+        var data;
+        if (newsType == NEWS_TYPE_IMAGE) {
+            data = "<img src='" + news + "'>"
+        } else {
+            data = news;
+        }
         return "<div class=\"clearfloat\">" +
             "<div class=\"author-name\"><small class=\"chat-date\">"+time+"</small> </div> " +
-            "<div class=\"right\"> <div class=\"chat-message\"> " + news + " </div> " +
+            "<div class=\"right\"> <div class=\"chat-message\"> " + data + " </div> " +
             "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>";
     };
 
@@ -328,11 +352,12 @@
 
     $(".emoji-picker-image").each(function () {
         $(this).click(function () {
+            var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
             var bq = $(this).parent().html();
-            $(".chatBox-content-demo").append("<div class=\"clearfloat\">" +
-                "<div class=\"author-name\"><small class=\"chat-date\">2017-12-02 14:26:58</small> </div> " +
-                "<div class=\"right\"> <div class=\"chat-message\"> " + bq + " </div> " +
-                "<div class=\"chat-avatars\"><img src=\"img/icon01.png\" alt=\"头像\" /></div> </div> </div>");
+            $(".chatBox-content-demo").append(sendNewsModdle(time, bq));
+            var sendData = JSON.stringify({'msg_type': C_NEWS, 'data': {'news_type': NEWS_TYPE_EMOJI, 'news':bq}});
+            console.log(sendData);
+            ws.send(sendData);
             //发送后关闭表情框
             $(".biaoqing-photo").toggle();
             //聊天框默认最底部
