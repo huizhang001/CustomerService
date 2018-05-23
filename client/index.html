@@ -213,17 +213,15 @@
     // 用户关闭了连接
     var cClose = function (data) {
         $.cookie(data.data.client_id, null); // 清理此连接的缓存
-        console.log(data);
         $('.'+data.data.client_id).remove();
         chatListPeople();
     };
 
     // 接收消息
     var getNews = function (data) {
-        console.log(data);
         var time = new Date().Format("yyyy-MM-dd hh:mm:ss");
         var news = data.data.news;
-        setNewsCookie(C, data.data.client_id, news);
+        // setNewsCookie(C, data.data.client_id, news);
         $("#chatBox-content-demo").append(getNewsModdle(time, news, data.data.news_type));
     };
 
@@ -235,7 +233,6 @@
             sendData = JSON.stringify({'msg_type': 'CS_NEWS','client_id':clientId,
                 'data': {'news_type': NEWS_TYPE_ORDINARY, 'news': textContent}});
             setNewsCookie(CS, clientId, textContent, NEWS_TYPE_ORDINARY); // 把客服消息放入cookie
-            console.log(sendData);
             ws.send(sendData);
             $(".chatBox-content-demo").append(sendNewsModdle(new Date().Format("yyyy-MM-dd hh:mm:ss"), textContent));
             //发送后清空输入框
@@ -251,7 +248,6 @@
     var setNewsCookie = function (type, key, news, news_type) {
         var customerNews = JSON.parse($.cookie(key));
         customerNews.push({'type': type, 'time': new Date().Format("yyyy-MM-dd hh:mm:ss"), 'news': news, 'news_type': news_type});
-        console.log(customerNews);
         $.cookie(key, JSON.stringify(customerNews));
         console.log($.cookie(key));
     };
@@ -365,7 +361,6 @@
                 var sendNews;
                 clientId = $(this).data('clientid');
                 var customerNews = JSON.parse($.cookie(clientId));
-                console.log(customerNews);
                 $(".chatBox-head-one").toggle();
                 $(".chatBox-head-two").toggle();
                 $(".chatBox-list").fadeToggle();
@@ -381,13 +376,10 @@
                         }
                     } else {
                         if (value.news_type == NEWS_TYPE_IMAGE) {
-                            console.log("我是图片");
                             sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_IMAGE);
                         } else if (value.news_type == NEWS_TYPE_EMOJI) {
-                            console.log("我是表情");
                             sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
                         } else if (value.news_type == NEWS_TYPE_ORDINARY) {
-                            console.log("我是普通文字");
                             sendNews = sendNewsModdle(value.time, value.news, NEWS_TYPE_EMOJI);
                         }
                     }
