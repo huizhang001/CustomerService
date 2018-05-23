@@ -27,19 +27,15 @@ class Log {
     }
 
     /**
-     * Description: 单例模式
+     * Description: 省代码
      * User: 郭玉朝
      * CreateTime: 2018/4/25 下午9:39
      * @return Log
      */
     public static function instance(array $params  = [''])
     {
-        if (Log::$myself == null || $params[0] != Log::$params[0]) {
-            Log::$params = $params;
-            Log::$myself = new Log();
-            return Log::$myself;
-        }
         Log::$params = $params;
+        Log::$myself = new Log();
         return Log::$myself;
     }
 

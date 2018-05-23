@@ -7,6 +7,7 @@
 namespace Tool\Response;
 
 use Tool\DataConversion\DataConversion;
+use Tool\Log\Log;
 
 class Response
 {
