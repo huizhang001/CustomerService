@@ -78,7 +78,7 @@
                             <i class="iconfont icon-biaoqing"></i>
                         </button>
                         <label id="chat-tuxiang" title="发送图片" for="inputImage" class="btn-default-styles">
-                            <input type="file" onchange="selectImg(this)" accept="image/jpg,image/jpeg,image/png"
+                            <input type="file" oninput="selectImg(this)" accept="image/jpg,image/jpeg,image/png"
                                    name="file" id="inputImage" class="hidden">
                             <i class="iconfont icon-tuxiang"></i>
                         </label>
@@ -135,17 +135,11 @@
 <script src="js/jquery.min.js"></script>
 <script src="js/cookie.js"></script>
 <script src="js/time.js"></script>
+<script src="js/myself.js"></script>
+
 <script>
     var ws;
     var data;
-    const C = 'customer'; // 客户
-    const C_NEWS = 'C_NEWS'; // 客户端消息
-    const CS = 'customer_service'; // 客户
-    const CS_NEWS = 'CS_NEWS'; // 服务器消息
-    const MSG_TYPE_CS_ADD_IMG = "CS_ADD_IMG";
-    const NEWS_TYPE_IMAGE = 'image'; // 图片
-    const NEWS_TYPE_EMOJI = 'emoji'; // 表情
-    const NEWS_TYPE_ORDINARY = 'ordinary';// 普通
     $(function(){
         link();
         index();
@@ -153,7 +147,7 @@
     function link () {
         ws = new WebSocket("ws://0.0.0.0:8283");//连接服务器
         ws.onopen = function(event){
-            var data = {'msg_type': 'C_CONNECT'};
+            var data = {'msg_type': 'C_CONNECT','data':''};
             ws.send(JSON.stringify(data));
         };
         ws.onmessage = function (event) {
@@ -221,9 +215,7 @@
             //发送后清空输入框
             $(".div-textarea").html("");
             //聊天框默认最底部
-            $(document).ready(function () {
-                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-            });
+            scrollBottom('chatBox-content-demo');
         }
     });
 
@@ -324,9 +316,7 @@
         $(".ChatInfoHead>img").attr("src", $(this).children().eq(0).children("img").attr("src"));
 
         //聊天框默认最底部
-        $(document).ready(function () {
-            $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-        });
+        scrollBottom('chatBox-content-demo');
     }
 
 
@@ -360,9 +350,7 @@
             //发送后关闭表情框
             $(".biaoqing-photo").toggle();
             //聊天框默认最底部
-            $(document).ready(function () {
-                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-            });
+            scrollBottom('chatBox-content-demo');
         })
     });
 
@@ -373,6 +361,7 @@
         if (!pic.files || !pic.files[0]) {
             return;
         }
+        console.log("我执行了");
         var reader = new FileReader();
         reader.onload = function (evt) {
             var images = evt.target.result;
@@ -395,10 +384,9 @@
                 'data': {'news_type': NEWS_TYPE_IMAGE, 'news': sendImgUrl}});
             $(".chatBox-content-demo").append(sendNewsModdle(time, images, NEWS_TYPE_IMAGE));
             ws.send(sendData);
+            pic.value = "";
             //聊天框默认最底部
-            $(document).ready(function () {
-                $("#chatBox-content-demo").scrollTop($("#chatBox-content-demo")[0].scrollHeight);
-            });
+            scrollBottom('chatBox-content-demo');
         };
         reader.readAsDataURL(pic.files[0]);
     }

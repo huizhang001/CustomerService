@@ -14,11 +14,20 @@ class Request
 {
 
     public $params;
+
+    /**
+     * User: 郭玉朝
+     * CreateTime: 2018/5/23 下午3:15
+     * @var
+     * Description: 请求的所有数据
+     */
+    public $allData;
+
     /**
      * User: 郭玉朝
      * CreateTime: 2018/4/27 下午4:41
      * @var array
-     * Description: 请求的数据
+     * Description: 数据包
      */
     public $data;
 
@@ -42,9 +51,9 @@ class Request
     {
         $this->params = $params;
         if (isset($params[2]) && $params[2] == false) {
-            $this->data = json_decode($params[0], true);
+            $this->allData = json_decode($params[0], true);
         } else {
-            $this->data = json_decode(Encrypt::authcodeEncrypt($params[0],Encrypt::DECRYPT), true);
+            $this->allData = json_decode(Encrypt::authcodeEncrypt($params[0],Encrypt::DECRYPT), true);
         }
         $this->init();
     }
@@ -56,7 +65,8 @@ class Request
      */
     protected function init() {
         $this->clientId = $this->params[1];
-        $this->msgType = $this->data['msg_type'];
+        $this->msgType = $this->allData['msg_type'];
+        $this->data = $this->allData['data'];
     }
 
     /**
@@ -84,15 +94,15 @@ class Request
             is_array($value)?array_push($twoFirst, $value):array_push($oneFirst, $value);
         }
         // 验证一维数组
-        $result = array_diff_key(array_flip($oneFirst), $this->data);
+        $result = array_diff_key(array_flip($oneFirst), $this->allData);
         if (!empty($result)) {
             return json_encode(array_keys($result), JSON_UNESCAPED_UNICODE);
         }
         // 验证二维数组
         foreach ($twoFirst as $key => $value) {
             foreach ($value as $checkKey => $checkValue) {
-                if (!isset($this->data[$checkKey])) return json_encode([$checkKey], JSON_UNESCAPED_UNICODE);
-                $result = array_diff_key(array_flip($checkValue), $this->data[$checkKey]);
+                if (!isset($this->allData[$checkKey])) return json_encode([$checkKey], JSON_UNESCAPED_UNICODE);
+                $result = array_diff_key(array_flip($checkValue), $this->allData[$checkKey]);
                 if (!empty($result)) {
                     return json_encode(array_keys($result, JSON_UNESCAPED_UNICODE));
                 }
@@ -102,7 +112,17 @@ class Request
     }
 
     /**
-     * Description: 获取解密后的数据
+     * Description: 获取所有数据
+     * User: 郭玉朝
+     * CreateTime: 2018/5/23 下午3:18
+     * @return mixed
+     */
+    public function getAllData() {
+        return $this->allData;
+    }
+
+    /**
+     * Description: 获取传递的数据
      * User: 郭玉朝
      * CreateTime: 2018/4/30 上午10:05
      * @return array|mixed

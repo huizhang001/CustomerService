@@ -55,6 +55,7 @@ class SMessageCallBack
      */
     public function main()
     {
+        print_r($this->request);
         switch ($this->request->msgType) {
             case Consts::CS_CONNECT: // 客服连接
                 $this->connection();
@@ -95,7 +96,7 @@ class SMessageCallBack
     {
         // 检测连接参数
         if ($this->customerService->checkConnectionParams(
-            ['msg_type', 'customer_service_name', 'customer_service_sign']) !== true) return false;
+            ['msg_type', ['data' => ['customer_service_name', 'customer_service_sign']]]) !== true) return false;
 
         // 查找客服是否存在
         $customerService = $this->customerService->findCustomerService();

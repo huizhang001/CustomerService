@@ -6,6 +6,8 @@ use App\Server\CustomerService\SCloseCallBack;
 use App\Server\Customer\CCloseCallBack;
 use App\Server\CustomerService\CustomerService;
 use Tool\Log\Log;
+use \GatewayWorker\Lib\Gateway;
+
 class Events
 {
 
@@ -26,6 +28,7 @@ class Events
      * @param $message
      */
     public static function onMessage($client_id, $message) {
+        print_r($message);
         if ($_SERVER['GATEWAY_PORT'] == 8282) { // 客服
             SMessageCallBack::instance(Request::instance([$message, $client_id, false]))->main();
         } elseif ($_SERVER['GATEWAY_PORT'] == 8283) { // 客户
